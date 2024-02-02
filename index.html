@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workshop Manual Viewer</title>
@@ -68,22 +70,47 @@
         <div class="toc-item" onclick="openPDF('pdfs/91 Seats and Restraint Systems.pdf')">91 Seats and Restraint Systems</div>
         <div class="toc-item" onclick="openPDF('pdfs/98 Paint.pdf')">98 Paint</div>
     </div>
-    
+    <canvas id="pdf-canvas"></canvas>
 
-<iframe id="pdfViewer" style="width:100%; height:100%;" frameborder="0"></iframe>
-
-<script>
-    function openPDF(filename) {
-        console.log("Attempting to open PDF:", filename); // Debugging line
-        var viewer = document.getElementById('pdfViewer');
-        if (viewer) {
-            console.log("Viewer found. Updating src to:", filename); // Debugging line
-            viewer.src = filename;
-        } else {
-            console.error("Failed to find the viewer iframe."); // Debugging line
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+        
+        function openPDF(url) {
+            var loadingTask = pdfjsLib.getDocument(url);
+            loadingTask.promise.then(function(pdf) {
+                console.log('PDF loaded');
+                
+                // Fetch the first page
+                var pageNumber = 1;
+                pdf.getPage(pageNumber).then(function(page) {
+                    console.log('Page loaded');
+                    
+                    var scale = 1.5;
+                    var viewport = page.getViewport({scale: scale});
+        
+                    // Prepare canvas using PDF page dimensions
+                    var canvas = document.getElementById('pdf-canvas');
+                    var context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+        
+                    // Render PDF page into canvas context
+                    var renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    var renderTask = page.render(renderContext);
+                    renderTask.promise.then(function () {
+                        console.log('Page rendered');
+                    });
+                });
+            }, function (reason) {
+                // PDF loading error
+                console.error(reason);
+            });
         }
-    }
-</script>
+        </script>
+        
 
 </body>
 </html>
