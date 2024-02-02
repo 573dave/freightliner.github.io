@@ -74,8 +74,14 @@
 
 <script>
     function openPDF(filename) {
+        console.log("Attempting to open PDF:", filename); // Debugging line
         var viewer = document.getElementById('pdfViewer');
-        viewer.src = filename;
+        if (viewer) {
+            console.log("Viewer found. Updating src to:", filename); // Debugging line
+            viewer.src = filename;
+        } else {
+            console.error("Failed to find the viewer iframe."); // Debugging line
+        }
     }
 </script>
 
