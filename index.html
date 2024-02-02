@@ -81,23 +81,25 @@
                 console.log('PDF loaded');
                 
                 // Fetch the first page
-                var pageNumber = 1;
-                pdf.getPage(pageNumber).then(function(page) {
+                pdf.getPage(1).then(function(page) {
                     console.log('Page loaded');
                     
-                    var scale = 1.5;
-                    var viewport = page.getViewport({scale: scale});
-        
-                    // Prepare canvas using PDF page dimensions
                     var canvas = document.getElementById('pdf-canvas');
                     var context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-        
+
+                    // You might want to adjust this or make it responsive based on the actual container or window size
+                    var desiredWidth = canvas.offsetWidth; 
+                    var viewport = page.getViewport({scale: 1});
+                    var scale = desiredWidth / viewport.width;
+                    var scaledViewport = page.getViewport({scale: scale});
+
+                    canvas.height = scaledViewport.height;
+                    canvas.width = scaledViewport.width;
+
                     // Render PDF page into canvas context
                     var renderContext = {
                         canvasContext: context,
-                        viewport: viewport
+                        viewport: scaledViewport
                     };
                     var renderTask = page.render(renderContext);
                     renderTask.promise.then(function () {
@@ -105,10 +107,17 @@
                     });
                 });
             }, function (reason) {
-                // PDF loading error
                 console.error(reason);
             });
         }
+
+        // Adjust canvas size on window resize to maintain responsive behavior
+        window.onresize = function() {
+            if(window.lastPdfUrl) {
+                openPDF(window.lastPdfUrl); // Re-open the last PDF to adjust its size
+            }
+        };
+
         </script>
         
 
